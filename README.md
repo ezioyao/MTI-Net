@@ -37,7 +37,7 @@ project_root/
 
 # Evaluation Instructions
 We provide two evaluation scripts:
-- `eval_ori.py`: evaluate the original YOLO-Master baseline model
+- `eval_ori.py`: evaluate the original baseline model
 - `eval_ours.py`: evaluate our improved model with DART and MTI modules
 
 ## Evaluate Original Model
