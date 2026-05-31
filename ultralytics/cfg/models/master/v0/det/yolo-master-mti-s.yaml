@@ -1,0 +1,53 @@
+# YOLO-Master 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# YOLO-Master with MTI-Net V7 (Titan) & ES-MoE Backbone
+
+# Parameters
+nc: 80 # number of classes
+scales: # model compound scaling constants
+  # [depth, width, max_channels]
+  s: [0.50, 0.50, 1024] 
+
+backbone:
+  # [from, repeats, module, args]
+  - [-1, 1, Conv, [64, 3, 2]] # 0-P1/2
+  - [-1, 1, Conv, [128, 3, 2]] # 1-P2/4
+  - [-1, 2, C3k2, [256, False, 0.25]]
+  - [-1, 1, ES_MOE, [256]]
+  - [-1, 1, Conv, [256, 3, 2]] # 3-P3/8
+  - [-1, 2, C3k2, [512, False, 0.25]]
+  - [-1, 1, ES_MOE, [512]] # 6 (Backbone P3 Output)
+  - [-1, 1, Conv, [512, 3, 2]] # 5-P4/16
+  - [-1, 4, A2C2f, [512, True, 4]]
+  - [-1, 1, ES_MOE, [512]] # 9 (Backbone P4 Output)
+  - [-1, 1, Conv, [1024, 3, 2]] # 7-P5/32
+  - [-1, 4, A2C2f, [1024, True, 1]] # 8
+  - [-1, 1, ES_MOE, [1024]] # 12 (Backbone P5 Output)
+
+head:
+  - [-1, 1, MTI_Block, [1024, 5, 4]] # 13: MTI P5
+  
+  - [9, 1, MTI_Block, [512, 5, 4]]   # 14: MTI P4
+
+  - [6, 1, TemporalSlice, [5]]       # 15: Slice P3
+
+  - [13, 1, nn.Upsample, [None, 2, "nearest"]] # 16: Up P5 (from MTI 13)
+  
+  - [[-1, 14], 1, Concat, [1]] # 17
+  - [-1, 2, C3k2, [512, True]] # 18
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]] # 19
+  
+  - [[-1, 15], 1, Concat, [1]] # 20
+  - [-1, 2, C3k2, [256, True]] # 21 (P3 Output)
+
+  - [-1, 1, Conv, [256, 3, 2]] # 22
+  
+  - [[-1, 18], 1, Concat, [1]] # 23
+  - [-1, 2, C3k2, [512, True]] # 24 (P4 Output)
+
+  - [-1, 1, Conv, [512, 3, 2]] # 25
+  
+  - [[-1, 13], 1, Concat, [1]] # 26
+  - [-1, 2, C3k2, [512, True]] # 27 (P5 Output)
+
+  - [[21, 24, 27], 1, Detect, [nc]] # Detect(P3, P4, P5)
