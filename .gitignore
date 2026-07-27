@@ -208,3 +208,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# SMT-style baseline runtime outputs
+baselines/smt_style/logs/
+baselines/smt_style/checkpoints/
+baselines/smt_style/visualizations/

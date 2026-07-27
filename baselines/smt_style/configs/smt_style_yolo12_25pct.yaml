@@ -1,0 +1,52 @@
+experiment: smt_style_external_video_ssl
+method_name: SMT-style Temporal Mean Teacher
+third_party:
+  repo: https://github.com/AKASH2907/stable-mean-teacher
+  local_path: third_party/stable-mean-teacher
+  commit: 2ae8b57a8f7819f5d0882b99967ab5b80058b186
+detector:
+  architecture: YOLO12-S
+  model_config: ultralytics/cfg/models/12/yolo12.yaml
+  scale: s
+  imgsz: 640
+data:
+  sparse_anchor_ratio: 25pct
+  labeled_dataset_config: coco_25pct.yaml
+  full_dataset_config: coco_ori.yaml
+  reference_dart_dataset_config: coco_dart_25pct.yaml
+  train_split: train
+  val_split: val
+  test_split: test
+  require_fixed_anchor_index: true
+  delta_t: 4
+training:
+  epochs: 150
+  batch: 8
+  workers: 32
+  optimizer: AdamW
+  lr0: 0.001
+  momentum: 0.937
+  weight_decay: 0.0005
+  cos_lr: true
+  seeds: [42, 43, 44, 45, 46]
+  mti_enabled: false
+  dsim_enabled: false
+smt_style:
+  ema_decay: 0.99
+  consistency_weight: 0.1
+  rampup_epochs: 30
+  threshold_search:
+    tau_conf: [0.3, 0.5, 0.7]
+    tau_temporal: [0.3, 0.5, 0.7]
+  selected_thresholds:
+    tau_conf: 0.3
+    tau_temporal: 0.3
+  unlabeled_batch: 2
+  pseudo_start_epoch: 11
+  use_eor: false
+  temporal_consistency: box_level_iou
+outputs:
+  root: baselines/smt_style
+  logs: baselines/smt_style/logs
+  checkpoints: baselines/smt_style/checkpoints
+  visualizations: baselines/smt_style/visualizations
